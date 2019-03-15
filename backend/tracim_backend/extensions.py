@@ -2,9 +2,6 @@ import pluggy as pluggy
 from hapic import Hapic
 
 hapic = Hapic()
-plugin_manager = pluggy.PluginManager('tracim_backend')
-events_impl = pluggy.HookimplMarker("tracim_backend")
-events_spec = pluggy.HookspecMarker("tracim_backend")
 # TODO - G.M - 2018-08-08 - [GlobalVar] Refactor Global var of tracim_backend
 
 # INFO - G.M - 2018-08-08 - app_list

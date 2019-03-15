@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 from pyramid_multiauth import MultiAuthenticationPolicy
+from tracim_backend.lib.core.events import dispatcher
+from tracim_backend.lib.core.myapi import MyAPIEventListener
+from tracim_backend.lib.core.user import UserEvents
 
 from tracim_backend.models.auth import AuthType
 from tracim_backend.views.core_api.account_controller import AccountController
@@ -14,7 +17,6 @@ from hapic.ext.pyramid import PyramidContext
 from sqlalchemy.exc import OperationalError
 
 from tracim_backend.extensions import hapic
-from tracim_backend.extensions import plugin_manager
 from tracim_backend.config import CFG
 from tracim_backend.lib.utils.request import TracimRequest
 from tracim_backend.lib.utils.authentification import CookieSessionAuthentificationPolicy
@@ -201,7 +203,8 @@ def web(global_config, **local_settings):
         'Tracim v2 API',
         'API of Tracim v2',
     )
-    import tracim_backend.lib.core.events
+    dispatcher.add_hookspecs(UserEvents)
+    dispatcher.register(MyAPIEventListener())
     return configurator.make_wsgi_app()
 
 
