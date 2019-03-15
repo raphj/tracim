@@ -64,11 +64,20 @@ from tracim_backend.models.data import UserRoleInWorkspace
 class UserEvents(object):
 
     @tracim_backend.lib.core.events.spec
-    def user_creation_hook(self, email: str):
+    def user_creation_hook(
+            self,
+            user_api: 'UserApi',
+            kwargs: dict,
+    ):
         pass
 
     @tracim_backend.lib.core.events.spec
-    def user_created_hook(self, email: str, user: User):
+    def user_created_hook(
+        self,
+        user_api: 'UserApi',
+        user_id: typing.Optional[int],
+        kwargs: dict,
+    ):
         pass
 
 class UserApi(object):
@@ -761,6 +770,7 @@ class UserApi(object):
             )
         return True
 
+
     def create_user(
         self,
         email,
@@ -773,7 +783,18 @@ class UserApi(object):
         do_save: bool=True,
         do_notify: bool=True,
     ) -> User:
-        dispatcher.hook.user_creation_hook(email=email)
+        dispatcher.hook.user_creation_hook(
+            user_api = self,
+            kwargs={
+                'email': email,
+                'password': password,
+                'name': name,
+                'timezone': timezone,
+                'lang': lang,
+                'auth_type': auth_type,
+                'groups': groups,
+            }
+        )
         if do_notify and not self._config.EMAIL_NOTIFICATION_ACTIVATED:
             raise NotificationDisabledCantCreateUserWithInvitation(
                 "Can't create user with invitation mail because "
@@ -814,7 +835,19 @@ class UserApi(object):
                 ) from exc
         if do_save:
             self.save(new_user)
-        dispatcher.hook.user_created_hook(email=email, user=new_user)
+        dispatcher.hook.user_created_hook(
+            user_api = self,
+            user_id=new_user.user_id,
+            kwargs={
+                'email': email,
+                'password': password,
+                'name': name,
+                'timezone': timezone,
+                'lang': lang,
+                'auth_type': auth_type,
+                'groups': groups,
+            }
+        )
         return new_user
 
     def create_minimal_user(
