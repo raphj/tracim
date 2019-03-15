@@ -1,4 +1,3 @@
-import pluggy as pluggy
 from hapic import Hapic
 
 hapic = Hapic()
