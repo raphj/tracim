@@ -10,6 +10,7 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Query
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import NoResultFound
+from tracim_backend.extensions import plugin_manager
 
 from tracim_backend.app_models.validator import TracimValidator
 from tracim_backend.app_models.validator import user_email_validator
@@ -49,6 +50,7 @@ from tracim_backend.exceptions import UserDoesNotExist
 from tracim_backend.exceptions import WrongAuthTypeForUser
 from tracim_backend.exceptions import WrongLDAPCredentials
 from tracim_backend.exceptions import WrongUserPassword
+from tracim_backend.extensions import events_spec
 from tracim_backend.lib.core.group import GroupApi
 from tracim_backend.lib.mail_notifier.notifier import get_email_manager
 from tracim_backend.lib.utils.logger import logger
@@ -61,7 +63,6 @@ from tracim_backend.models.data import UserRoleInWorkspace
 
 
 class UserApi(object):
-
     def __init__(
             self,
             current_user: typing.Optional[User],
@@ -751,6 +752,14 @@ class UserApi(object):
             )
         return True
 
+    @events_spec
+    def user_creation_hook(self, email: str):
+        pass
+
+    @events_spec
+    def user_created_hook(self, email: str, user: User):
+        pass
+
     def create_user(
         self,
         email,
@@ -763,6 +772,7 @@ class UserApi(object):
         do_save: bool=True,
         do_notify: bool=True,
     ) -> User:
+        plugin_manager.hook.user_creation_hook(email=email)
         if do_notify and not self._config.EMAIL_NOTIFICATION_ACTIVATED:
             raise NotificationDisabledCantCreateUserWithInvitation(
                 "Can't create user with invitation mail because "
@@ -803,6 +813,7 @@ class UserApi(object):
                 ) from exc
         if do_save:
             self.save(new_user)
+        plugin_manager.hook.user_created_hook(email=email, user=new_user)
         return new_user
 
     def create_minimal_user(
@@ -959,3 +970,4 @@ class UserApi(object):
             return False
 
         return True
+plugin_manager.add_hookspecs(UserApi)
