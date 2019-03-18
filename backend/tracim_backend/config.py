@@ -17,6 +17,9 @@ from tracim_backend.app_models.validator import update_validators
 from tracim_backend.exceptions import ConfigurationError
 from tracim_backend.extensions import app_list
 from tracim_backend.lib.utils.logger import logger
+from tracim_backend.lib.utils.plugin_manager import TracimPluginManager
+from tracim_backend.lib.utils.plugin_manager import monitoring_after_hook
+from tracim_backend.lib.utils.plugin_manager import monitoring_before_hook
 from tracim_backend.lib.utils.translation import translator_marker as _
 from tracim_backend.models.auth import AuthType
 from tracim_backend.models.auth import Group
@@ -666,9 +669,10 @@ class CFG(object):
         )
 
     def setup_event_dispatcher(self):
-        self.event_dispatcher = pluggy.PluginManager('tracim.event')
+        self.event_dispatcher = TracimPluginManager('tracim.event')
         from tracim_backend.lib.core.user import UserEvents
         self.event_dispatcher.add_hookspecs(UserEvents)
+        self.event_dispatcher.add_hookcall_monitoring(monitoring_before_hook, monitoring_after_hook)
 
     def _set_default_app(self, enabled_app_list: typing.List[str]):
 
