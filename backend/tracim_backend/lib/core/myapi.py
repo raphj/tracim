@@ -1,10 +1,6 @@
-import typing
-
 import tracim_backend.lib.core.events
-from sqlalchemy.orm import Session
-from tracim_backend.config import CFG
 from tracim_backend.lib.core.user import UserApi
-from tracim_backend.models.auth import User
+
 
 
 class MyAPIEventListener(object):
@@ -18,7 +14,10 @@ class MyAPIEventListener(object):
         user_api:UserApi,
         kwargs: dict,
     ):
-        print('Hook pre-user-creation My API : {}'.format(user_api._user.email))
+        if user_api._user:
+            print('Hook pre-user-creation My API : {}'.format(user_api._user.email))
+        else:
+            print('Hook pre-user-creation: no data')
 
     @tracim_backend.lib.core.events.impl
     def user_created_hook(
@@ -28,5 +27,7 @@ class MyAPIEventListener(object):
         kwargs: dict,
     ):
         user = user_api.get_one(user_id=user_id)
-
-        print('Hook post-user-creation My API : {}'.format(user_api._user.email))
+        if user:
+            print('Hook post-user-creation My API : {}'.format(user.email))
+        else:
+            print('Hook post-user-creation: no data')

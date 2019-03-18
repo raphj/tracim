@@ -1,11 +1,7 @@
 # -*- coding: utf-8 -*-
 from pyramid_multiauth import MultiAuthenticationPolicy
-from tracim_backend.lib.core.events import dispatcher
-from tracim_backend.lib.core.myapi import MyAPIEventListener
-from tracim_backend.lib.core.user import UserEvents
 
 from tracim_backend.models.auth import AuthType
-from tracim_backend.views.core_api.account_controller import AccountController
 
 try:  # Python 3.5+
     from http import HTTPStatus
@@ -62,6 +58,7 @@ from tracim_backend.exceptions import ContentNotFound
 from tracim_backend.exceptions import UserDoesNotExist
 from tracim_backend.exceptions import AuthenticationFailed
 from tracim_backend.exceptions import ContentTypeNotAllowed
+from tracim_backend.lib.core.myapi import MyAPIEventListener
 
 
 def web(global_config, **local_settings):
@@ -203,8 +200,8 @@ def web(global_config, **local_settings):
         'Tracim v2 API',
         'API of Tracim v2',
     )
-    dispatcher.add_hookspecs(UserEvents)
-    dispatcher.register(MyAPIEventListener())
+
+    app_config.event_dispatcher.register(MyAPIEventListener())
     return configurator.make_wsgi_app()
 
 

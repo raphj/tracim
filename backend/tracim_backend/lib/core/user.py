@@ -51,7 +51,6 @@ from tracim_backend.exceptions import WrongAuthTypeForUser
 from tracim_backend.exceptions import WrongLDAPCredentials
 from tracim_backend.exceptions import WrongUserPassword
 from tracim_backend.lib.core.group import GroupApi
-from tracim_backend.lib.core.events import dispatcher
 from tracim_backend.lib.mail_notifier.notifier import get_email_manager
 from tracim_backend.lib.utils.logger import logger
 from tracim_backend.models.auth import AuthType
@@ -783,7 +782,7 @@ class UserApi(object):
         do_save: bool=True,
         do_notify: bool=True,
     ) -> User:
-        dispatcher.hook.user_creation_hook(
+        self._config.event_dispatcher.hook.user_creation_hook(
             user_api = self,
             kwargs={
                 'email': email,
@@ -835,7 +834,7 @@ class UserApi(object):
                 ) from exc
         if do_save:
             self.save(new_user)
-        dispatcher.hook.user_created_hook(
+        self._config.event_dispatcher.hook.user_created_hook(
             user_api = self,
             user_id=new_user.user_id,
             kwargs={

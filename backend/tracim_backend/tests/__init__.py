@@ -4,6 +4,7 @@ import typing
 import unittest
 
 import plaster
+import pluggy
 import requests
 import transaction
 from depot.manager import DepotManager
@@ -26,7 +27,6 @@ from tracim_backend.fixtures.users_and_groups import Base as BaseFixture
 from tracim_backend.config import CFG
 from tracim_backend.extensions import hapic
 from tracim_backend import web
-from tracim_backend import webdav
 from tracim_backend import WebdavAppFactory
 from webtest import TestApp
 from io import BytesIO

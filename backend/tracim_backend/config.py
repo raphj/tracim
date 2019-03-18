@@ -6,6 +6,7 @@ from collections import OrderedDict
 from collections import namedtuple
 from urllib.parse import urlparse
 
+import pluggy
 from depot.manager import DepotManager
 from paste.deploy.converters import asbool
 
@@ -595,6 +596,7 @@ class CFG(object):
                 'with a correct value'.format(self.FRONTEND_DIST_FOLDER_PATH)
             )
         self.load_ldap_settings(settings)
+        self.setup_event_dispatcher()
 
     def load_ldap_settings(self, settings: typing.Dict[str, typing.Any]):
         """
@@ -662,6 +664,11 @@ class CFG(object):
             depot_storage_name,
             depot_storage_settings,
         )
+
+    def setup_event_dispatcher(self):
+        self.event_dispatcher = pluggy.PluginManager('tracim.event')
+        from tracim_backend.lib.core.user import UserEvents
+        self.event_dispatcher.add_hookspecs(UserEvents)
 
     def _set_default_app(self, enabled_app_list: typing.List[str]):
 
