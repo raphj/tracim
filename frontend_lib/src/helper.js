@@ -120,3 +120,8 @@ export const appFeatureCustomEventHandlerShowApp = (newContent, currentContentId
   }
   return true
 }
+
+export const TIMELINE_ELEMENT_TYPE = {
+  REVISION: 'revision',
+  COMMENT: 'comment'
+}

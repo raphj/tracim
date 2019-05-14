@@ -17,6 +17,7 @@ import {
   convertBackslashNToBr,
   generateLocalStorageContentId,
   BREADCRUMBS_TYPE,
+  TIMELINE_ELEMENT_TYPE,
   appFeatureCustomEventHandlerShowApp
 } from 'tracim_frontend_lib'
 import {
@@ -76,7 +77,10 @@ class HtmlDocument extends React.Component {
       case 'html-document_showApp':
         console.log('%c<HtmlDocument> Custom event', 'color: #28a745', type, data)
         const isSameContentId = appFeatureCustomEventHandlerShowApp(data.content, state.content.content_id, state.content.content_type)
-        if (isSameContentId) this.setState({isVisible: true})
+        if (isSameContentId) this.setState({
+          isVisible: true,
+          forceTimelineClosed: this.shouldForceTimelineClosed()
+        })
         break
 
       case 'html-document_hideApp':
@@ -236,9 +240,9 @@ class HtmlDocument extends React.Component {
         ...r,
         created_raw: r.created,
         created: displayDistanceDate(r.created, loggedUser.lang),
-        timelineType: 'revision',
+        timelineType: TIMELINE_ELEMENT_TYPE.REVISION,
         commentList: r.comment_ids.map(ci => ({
-          timelineType: 'comment',
+          timelineType: TIMELINE_ELEMENT_TYPE.COMMENT,
           ...resCommentWithProperDate.find(c => c.content_id === ci)
         })),
         number: i + 1
@@ -257,16 +261,7 @@ class HtmlDocument extends React.Component {
       generateLocalStorageContentId(resHtmlDocument.body.workspace_id, resHtmlDocument.body.content_id, appName, 'comment')
     )
 
-    // first time editing the doc, open in edit mode, unless it has been created with webdav or db imported from tracim v1
-    // see https://github.com/tracim/tracim/issues/1206
-    // @fixme Côme - 2018/12/04 - this might not be a great idea
-    const modeToRender = (
-      resRevision.body.length === 1 && // if content has only one revision
-      loggedUser.idRoleUserWorkspace >= 2 && // if user has EDIT authorization
-      resRevision.body[0].raw_content === '' // has content been created with raw_content (means it's from webdav or import db)
-    )
-      ? MODE.EDIT
-      : MODE.VIEW
+    const modeToRender = this.calculateModeToRender(resRevision.body, loggedUser.idRoleUserWorkspace)
 
     // can't use this.getLocalStorageItem because it uses state that isn't yet initialized
     const localStorageRawContent = localStorage.getItem(
@@ -284,12 +279,34 @@ class HtmlDocument extends React.Component {
       },
       newComment: localStorageComment || '',
       rawContentBeforeEdit: resHtmlDocument.body.raw_content,
-      timeline: revisionWithComment
+      timeline: revisionWithComment,
+      forceTimelineClosed: modeToRender === MODE.EDIT
     })
+
+    console.log('load content, set state forceTimelineClosed : ', modeToRender === MODE.EDIT)
 
     await putHtmlDocRead(loggedUser, config.apiUrl, content.workspace_id, content.content_id) // mark as read after all requests are finished
     GLOBAL_dispatchEvent({type: 'refreshContentList', data: {}}) // await above makes sure that we will reload workspace content after the read status update
   }
+
+  // INFO - CH - 2019-05-14 - first time editing the doc (eg, only one revision), open in edit mode, unless it has been
+  // created with webdav or db imported from tracim v1. see https://github.com/tracim/tracim/issues/1206
+  calculateModeToRender = (revisionList, userRoleId) => {
+    if (
+      revisionList.length === 1 &&
+      // userRoleId >= this.state.config.roleList.find(r => r.slug === 'contributor').id &&
+      userRoleId >= 2 &&
+      revisionList[0].raw_content === ''
+    ) {
+      return MODE.EDIT
+    }
+
+    return MODE.VIEW
+  }
+
+  shouldForceTimelineClosed = () => this.calculateModeToRender(this.timelineRevisionList(), this.state.loggedUser.idRoleUserWorkspace) === MODE.EDIT
+
+  timelineRevisionList = () => this.state.timeline.filter(t => t.timelineType === TIMELINE_ELEMENT_TYPE.REVISION)
 
   handleClickBtnCloseApp = () => {
     this.setState({ isVisible: false })
@@ -321,7 +338,7 @@ class HtmlDocument extends React.Component {
 
   handleClickNewVersion = () => {
     const previouslyUnsavedRawContent = this.getLocalStorageItem('rawContent')
- 
+
     this.setState(prev => ({
       content: {
         ...prev.content,
@@ -508,9 +525,9 @@ class HtmlDocument extends React.Component {
   }
 
   handleClickShowRevision = revision => {
-    const { mode, timeline } = this.state
+    const { mode } = this.state
 
-    const revisionArray = timeline.filter(t => t.timelineType === 'revision')
+    const revisionArray = this.timelineRevisionList()
     const isLastRevision = revision.revision_id === revisionArray[revisionArray.length - 1].revision_id
 
     if (mode === MODE.REVISION && isLastRevision) {
@@ -614,7 +631,7 @@ class HtmlDocument extends React.Component {
 
         <PopinFixedContent
           customClass={`${config.slug}__contentpage`}
-          showRightPartOnLoad={mode === MODE.VIEW}
+          forceRightPartClose={this.state.forceTimelineClosed}
         >
           <HtmlDocumentComponent
             mode={mode}
@@ -624,7 +641,7 @@ class HtmlDocument extends React.Component {
             disableValidateBtn={rawContentBeforeEdit === content.raw_content}
             onClickValidateBtn={this.handleSaveHtmlDocument}
             version={content.number}
-            lastVersion={timeline.filter(t => t.timelineType === 'revision').length}
+            lastVersion={this.timelineRevisionList().length}
             text={content.raw_content}
             onChangeText={this.handleChangeText}
             isArchived={content.is_archived}

@@ -7,7 +7,8 @@ import {
   revisionTypeList,
   generateLocalStorageContentId,
   appFeatureCustomEventHandlerShowApp,
-  BREADCRUMBS_TYPE
+  BREADCRUMBS_TYPE,
+  TIMELINE_ELEMENT_TYPE
 } from './helper.js'
 
 import { Breadcrumbs } from './component/Breadcrumbs/Breadcrumbs.jsx'
@@ -84,5 +85,6 @@ export {
   ErrorFlashMessageTemplateHtml,
   NewMemberForm,
   BREADCRUMBS_TYPE,
+  TIMELINE_ELEMENT_TYPE,
   appFeatureCustomEventHandlerShowApp
 }

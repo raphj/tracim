@@ -6,12 +6,21 @@ class PopinFixedContent extends React.Component {
   constructor (props) {
     super(props)
     this.state = {
-      rightPartOpen: false
+      rightPartOpen: true
     }
   }
 
   componentDidMount () {
-    if (this.props.showRightPartOnLoad) this.setState({rightPartOpen: true})
+    if (this.props.forceRightPartClose) this.setState({rightPartOpen: false})
+  }
+
+  componentDidUpdate (prevProps) {
+    const { props, state } = this
+    if (prevProps.forceRightPartClose !== props.forceRightPartClose) {
+      this.setState({rightPartOpen: !props.forceRightPartClose})
+      // if (props.forceRightPartClose && state.rightPartOpen) this.setState({rightPartOpen: !props.forceRightPartClose})
+      // if (!props.forceRightPartClose && !state.rightPartOpen) this.setState({rightPartOpen: true})
+    }
   }
 
   handleToggleRightPart = () => {
@@ -59,4 +68,8 @@ PopinFixedContent.propTypes = {
       return new Error(`PropType Error: childrens of ${componentName} must have 1 or 2 children.`)
     }
   }
+}
+
+PopinFixedContent.defaultProps = {
+  forceRightPartClose: false
 }
