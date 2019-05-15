@@ -204,7 +204,7 @@ jobs:
         - cd $TRAVIS_BUILD_DIR/backend
         - nohup pserve $BACKEND_TEST_CONFIG_FILE&
         - cd $TRAVIS_BUILD_DIR/functionnal_tests
-        - $(npm bin)/cypress run
+        - $(npm bin)/cypress run --spec "./cypress/integration/workspace/content_dashboard_headerdetail.js"
         - cd $TRAVIS_BUILD_DIR
 
 stages:
