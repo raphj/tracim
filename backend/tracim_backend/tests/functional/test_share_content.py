@@ -638,41 +638,6 @@ class TestGuestDownloadShareEndpoints(object):
         assert share["content_file_extension"] == ".txt"
         assert share["has_password"] is False
 
-    def test_api__guest_download_content_info__err_400__not_shareable_type(
-        self,
-        workspace_api_factory,
-        content_api_factory,
-        session,
-        web_testapp,
-        content_type_list,
-        share_lib_factory,
-        admin_user,
-    ) -> None:
-        workspace_api = workspace_api_factory.get()
-        content_api = content_api_factory.get()
-        workspace = workspace_api.create_workspace("test workspace", save_now=True)
-        test_folder = content_api.create(
-            content_type_slug=content_type_list.Folder.slug,
-            workspace=workspace,
-            label="Test folder",
-            do_save=False,
-            do_notify=False,
-        )
-        content_api.save(test_folder)
-        share_api = share_lib_factory.get()  # type: ShareLib
-        share_api.share_content(test_folder, emails=["thissharewill@notbe.presentinresponse"])
-        content_shares = share_api.get_content_shares(test_folder)
-        assert len(content_shares) == 1
-        content_share = content_shares[0]
-        transaction.commit()
-        res = web_testapp.get(
-            "/api/v2/public/guest-download/{share_token}".format(
-                share_token=content_share.share_token
-            ),
-            status=400,
-        )
-        assert res.json_body["code"] == ErrorCode.CONTENT_TYPE_NOT_ALLOWED
-
     def test_api__guest_download_content_info__err_400__content_share_not_found(
         self,
         workspace_api_factory,
@@ -757,41 +722,6 @@ class TestGuestDownloadShareEndpoints(object):
             status=400,
         )
         assert res.json_body["code"] == ErrorCode.CONTENT_SHARE_NOT_FOUND
-
-    def test_api__guest_download_content_file__err_400__not_shareable_type(
-        self,
-        workspace_api_factory,
-        content_api_factory,
-        session,
-        web_testapp,
-        content_type_list,
-        share_lib_factory,
-        admin_user,
-    ) -> None:
-        workspace_api = workspace_api_factory.get()
-        content_api = content_api_factory.get()
-        workspace = workspace_api.create_workspace("test workspace", save_now=True)
-        test_folder = content_api.create(
-            content_type_slug=content_type_list.Folder.slug,
-            workspace=workspace,
-            label="Test folder",
-            do_save=False,
-            do_notify=False,
-        )
-        content_api.save(test_folder)
-        share_api = share_lib_factory.get()  # type: ShareLib
-        share_api.share_content(test_folder, emails=["thissharewill@notbe.presentinresponse"])
-        content_shares = share_api.get_content_shares(test_folder)
-        assert len(content_shares) == 1
-        content_share = content_shares[0]
-        transaction.commit()
-        res = web_testapp.get(
-            "/api/v2/public/guest-download/{share_token}/toto.txt".format(
-                share_token=content_share.share_token
-            ),
-            status=400,
-        )
-        assert res.json_body["code"] == ErrorCode.CONTENT_TYPE_NOT_ALLOWED
 
     def test_api__guest_download_content_file_post__ok_200__with_password(
         self,
@@ -1061,41 +991,6 @@ class TestGuestDownloadShareEndpoints(object):
             status=400,
         )
         assert res.json_body["code"] == ErrorCode.CONTENT_NOT_FOUND
-
-    def test_api__guest_download_check__err_400__not_shareable_type(
-        self,
-        workspace_api_factory,
-        content_api_factory,
-        session,
-        web_testapp,
-        content_type_list,
-        share_lib_factory,
-        admin_user,
-    ) -> None:
-        workspace_api = workspace_api_factory.get()
-        content_api = content_api_factory.get()
-        workspace = workspace_api.create_workspace("test workspace", save_now=True)
-        test_folder = content_api.create(
-            content_type_slug=content_type_list.Folder.slug,
-            workspace=workspace,
-            label="Test folder",
-            do_save=False,
-            do_notify=False,
-        )
-        content_api.save(test_folder)
-        share_api = share_lib_factory.get()  # type: ShareLib
-        share_api.share_content(test_folder, emails=["thissharewill@notbe.presentinresponse"])
-        content_shares = share_api.get_content_shares(test_folder)
-        assert len(content_shares) == 1
-        content_share = content_shares[0]
-        transaction.commit()
-        res = web_testapp.post_json(
-            "/api/v2/public/guest-download/{share_token}/check".format(
-                share_token=content_share.share_token
-            ),
-            status=400,
-        )
-        assert res.json_body["code"] == ErrorCode.CONTENT_TYPE_NOT_ALLOWED
 
     def test_api__guest_download_check__ok_200__with_password(
         self,

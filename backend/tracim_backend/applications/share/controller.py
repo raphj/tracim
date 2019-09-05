@@ -137,14 +137,6 @@ class ShareController(Controller):
             share_token=hapic_data.path.share_token
         )  # type: ContentShare
 
-        # TODO - G.M - 2019-08-01 - verify in access to content share can be granted
-        # we should considered do these check at decorator level
-        content = ContentApi(
-            current_user=None, session=request.dbsession, config=app_config
-        ).get_one(content_share.content_id, content_type=content_type_list.Any_SLUG)
-        if content.type not in shareables_content_type:
-            raise ContentTypeNotAllowed()
-
         return api.get_content_share_in_context(content_share)
 
     @hapic.with_api_doc(tags=[SWAGGER_TAG__CONTENT_FILE_ENDPOINTS])
@@ -216,8 +208,6 @@ class ShareController(Controller):
         content = ContentApi(
             current_user=None, session=request.dbsession, config=app_config
         ).get_one(content_share.content_id, content_type=content_type_list.Any_SLUG)
-        if content.type not in shareables_content_type:
-            raise ContentTypeNotAllowed()
 
         try:
             file = DepotManager.get().get(content.depot_file)
