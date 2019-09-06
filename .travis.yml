@@ -202,8 +202,8 @@ jobs:
     - stage: frontend
       name: Frontend unit tests
       install:
-        - ./install_frontend_dependencies.sh root
-        - ./build_full_frontend.sh root
+        - ./install_frontend_dependencies.sh
+        - ./build_full_frontend.sh
       env:
         - TRAVIS_NODE_VERSION="10"
       script:
@@ -231,6 +231,7 @@ jobs:
       if: commit_message !~ /(\[skip ci unit_test\])/
     # INFO - G.M - 2019-04-25 - Stage: Functional Test ###
     - stage: functional
+      sudo: true
       name: Functional tests using Cypress
       <<: *_install_full_tracim
       env:
