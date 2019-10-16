@@ -9,6 +9,7 @@ from tracim_backend.config import CFG
 from tracim_backend.exceptions import RoleAlreadyExistError
 from tracim_backend.exceptions import UserCantRemoveHisOwnRoleInWorkspace
 from tracim_backend.exceptions import UserRoleNotFound
+from tracim_backend.models.auth import AuthType
 from tracim_backend.models.auth import Group
 from tracim_backend.models.auth import User
 from tracim_backend.models.context_models import UserRoleWorkspaceInContext
@@ -63,6 +64,15 @@ class RoleApi(object):
     #     if reader_role in cls.members_read_rights:
     #         return tested_role in cls.members_read_rights[reader_role]
     #     return False
+
+    def is_role_notifiable(self, user_role: UserRoleInWorkspace, force_notify: bool):
+        return (
+            (force_notify or user_role.do_notify is True)
+            and (not self._user or user_role.user != self._user)
+            and user_role.user.is_active
+            and not user_role.user.is_deleted
+            and user_role.user.auth_type != AuthType.UNKNOWN
+        )
 
     def get_user_workspaces_ids(self, user_id: int, min_role: int) -> typing.List[int]:
         assert self._user.profile == Group.TIM_ADMIN or self._user.user_id == user_id

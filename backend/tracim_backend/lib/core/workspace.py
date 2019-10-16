@@ -17,7 +17,6 @@ from tracim_backend.lib.core.userworkspace import RoleApi
 from tracim_backend.lib.utils.logger import logger
 from tracim_backend.lib.utils.translation import Translator
 from tracim_backend.lib.utils.utils import current_date_for_filename
-from tracim_backend.models.auth import AuthType
 from tracim_backend.models.auth import Group
 from tracim_backend.models.auth import User
 from tracim_backend.models.context_models import WorkspaceInContext
@@ -273,14 +272,9 @@ class WorkspaceApi(object):
         self, workspace: Workspace, force_notify: bool = False
     ) -> [UserRoleInWorkspace]:
         roles = []
+        role_api = RoleApi(session=self._session, current_user=self._user, config=self._config)
         for role in workspace.roles:
-            if (
-                (force_notify or role.do_notify is True)
-                and (not self._user or role.user != self._user)
-                and role.user.is_active
-                and not role.user.is_deleted
-                and role.user.auth_type != AuthType.UNKNOWN
-            ):
+            if role_api.is_role_notifiable(user_role=role, force_notify=force_notify):
                 roles.append(role)
         return roles
 
