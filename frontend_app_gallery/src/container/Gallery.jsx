@@ -23,12 +23,13 @@ import {
   getWorkspaceContentList
 } from '../action.async'
 import Carousel from '../component/Carousel.jsx'
+import LightboxToolbarButtons from '../component/LightboxToolbarButtons.jsx'
+import GalleryToolbarButtons from '../component/GalleryToolbarButtons.jsx'
 import { DIRECTION, buildRawFileUrl } from '../helper.js'
 import { debug } from '../debug.js'
 import ReactImageLightbox, { LightboxRotation } from '../Lightbox.js'
 import 'react-image-lightbox/style.css'
 import Fullscreen from 'react-full-screen'
-import classnames from 'classnames'
 
 const qs = require('query-string')
 
@@ -44,7 +45,7 @@ class Gallery extends React.Component {
       content: props.data ? props.data.content : debug.content,
       breadcrumbsList: [],
       appMounted: false,
-      folderId: qs.parse(props.data.config.history.location.search).folder_ids || 0,
+      folderId: undefined, // qs.parse(props.data.config.history.location.search).folder_ids || 0,
       imagesPreviews: [],
       fileCurrentPage: 1,
       fileName: '',
@@ -386,6 +387,10 @@ class Gallery extends React.Component {
     return state.imagesPreviews[state.fileSelected].rawFileUrl
   }
 
+  enableFullscreen () {
+    this.setState((prevState) => ({ fullscreen: !prevState.fullscreen }))
+  }
+
   render () {
     const { state, props } = this
 
@@ -400,41 +405,13 @@ class Gallery extends React.Component {
         />
 
         <PageContent>
-          <div className='gallery__action__button'>
-            <button
-              className='btn outlineTextBtn nohover primaryColorBorder'
-              onClick={() => this.onClickSlickPlay(!state.autoPlay)}
-            >
-              <span className='gallery__action__button__text'>
-                {state.autoPlay ? props.t('Pause') : props.t('Play')}
-              </span>
-              <i className={classnames('fa', 'fa-fw', state.autoPlay ? 'fa-pause' : 'fa-play')} />
-            </button>
-
-            <button
-              className='btn outlineTextBtn nohover primaryColorBorder gallery__action__button__rotation__left'
-              onClick={() => this.rotateImg(state.fileSelected, DIRECTION.LEFT)}
-            >
-              <span className='gallery__action__button__text'>{props.t('Rotate 90° left')}</span>
-              <i className={'fa fa-fw fa-undo'} />
-            </button>
-
-            <button
-              className='btn outlineTextBtn nohover primaryColorBorder gallery__action__button__rotation__right'
-              onClick={() => this.rotateImg(state.fileSelected, DIRECTION.RIGHT)}
-            >
-              <span className='gallery__action__button__text'>{props.t('Rotate 90° right')}</span>
-              <i className={'fa fa-fw fa-undo'} />
-            </button>
-
-            {/*
-              INFO - CH - there is a bug with the property userRoleIdInWorkspace that comes from frontend, it might be it's default value which is 1
-              So we won't use it for now and always display the delete button which will return 401 if user can't delete content
-            */}
-            <button className='btn outlineTextBtn nohover primaryColorBorder' onClick={this.handleOpenDeleteFilePopup}>
-              <span className='gallery__action__button__text'>{props.t('Delete')}</span><i className={'fa fa-fw fa-trash'} />
-            </button>
-          </div>
+          <GalleryToolbarButtons
+            autoPlay={this.state.autoPlay}
+            onClickSlickPlay={this.onClickSlickPlay.bind(this)}
+            fileSelected={this.state.fileSelected}
+            rotateImg={this.rotateImg.bind(this)}
+            handleOpenDeleteFilePopup={this.handleOpenDeleteFilePopup.bind(this)}
+          />
 
           {state.imagesPreviewsLoaded
             ? (
@@ -472,48 +449,15 @@ class Gallery extends React.Component {
               imagePadding={0}
               reactModalProps={{ parentSelector: () => this.modalRoot }}
               toolbarButtons={[
-                <div className={'gallery__action__button__lightbox'}>
-                  <button
-                    className={'btn iconBtn'}
-                    onClick={() => this.onClickSlickPlay(!state.autoPlay)}
-                    title={state.autoPlay ? props.t('Pause') : props.t('Play')}
-                  >
-                    <i className={classnames('fa', 'fa-fw', state.autoPlay ? 'fa-pause' : 'fa-play')} />
-                  </button>
-
-                  <button
-                    className={'btn iconBtn'}
-                    onClick={() => this.setState((prevState) => ({ fullscreen: !prevState.fullscreen }))}
-                    title={state.fullscreen ? props.t('Disable fullscreen') : props.t('Enable fullscreen')}
-                  >
-                    <i className={classnames('fa', 'fa-fw', state.fullscreen ? 'fa-compress' : 'fa-expand')} />
-                  </button>
-
-                  <button
-                    className='btn iconBtn gallery__action__button__lightbox__rotation__left'
-                    onClick={() => this.rotateImg(state.fileSelected, DIRECTION.LEFT)}
-                    title={props.t('Rotate 90° left')}
-                  >
-                    <i className={'fa fa-fw fa-undo'} />
-                  </button>
-
-                  <button
-                    className='btn iconBtn gallery__action__button__lightbox__rotation__right'
-                    onClick={() => this.rotateImg(state.fileSelected, DIRECTION.RIGHT)}
-                    title={props.t('Rotate 90° right')}
-                  >
-                    <i className={'fa fa-fw fa-undo'} />
-                  </button>
-
-                  <a
-                    className='btn iconBtn gallery__action__button__lightbox__openRawContent'
-                    title={props.t('Open raw file')}
-                    href={this.getRawFileUrlSelectedFile()}
-                    target='_blank'
-                  >
-                    <i className={'fa fa-fw fa-download'} />
-                  </a>
-                </div>
+                <LightboxToolbarButtons
+                  autoPlay={this.state.autoPlay}
+                  onClickSlickPlay={this.onClickSlickPlay.bind(this)}
+                  fileSelected={this.state.fileSelected}
+                  fullscreen={this.state.fullscreen}
+                  enableFullscreen={this.enableFullscreen.bind(this)}
+                  rotateImg={this.rotateImg.bind(this)}
+                  rawFileUrlSelectedFile={this.getRawFileUrlSelectedFile()}
+                />
               ]}
             />
           )}
