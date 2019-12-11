@@ -45,7 +45,7 @@ class Gallery extends React.Component {
       content: props.data ? props.data.content : debug.content,
       breadcrumbsList: [],
       appMounted: false,
-      folderId: undefined, // qs.parse(props.data.config.history.location.search).folder_ids || 0,
+      folderId: qs.parse(props.data.config.history.location.search).folder_ids || 0,
       imagesPreviews: [],
       fileCurrentPage: 1,
       fileName: '',
