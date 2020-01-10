@@ -132,7 +132,7 @@ Or with PIP:
 #### All in terminal way ####
 
 
-Run all web services with UWSGI:
+Run all web services with uWSGI:
 
     ## UWSGI SERVICES
     # set tracim_conf_file path
