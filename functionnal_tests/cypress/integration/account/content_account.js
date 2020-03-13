@@ -22,7 +22,7 @@ describe('content :: account', () => {
     cy.get('[data-cy=userinfo__email').should('be.visible')
     cy.get('[data-cy=avatar]').should('be.visible')
   })
-  it('Checks if menu if visible', () => {
+  it('Checks if menu is visible', () => {
     //        account userpreference menu
     cy.get('.menusubcomponent__list').should('be.visible')
     cy.get('[data-cy=menusubcomponent__list__personalData]').should('be.visible')
@@ -31,6 +31,7 @@ describe('content :: account', () => {
   })
   it('content :: account > profile ', () => {
     //        account userpreference profile
+    cy.get('.sidebar__expand').click()
     cy.get('[data-cy=menusubcomponent__list__personalData] > .menusubcomponent__list__item__link').click()
     cy.get('.personaldata__sectiontitle').should('be.visible')
     cy.get('.personaldata__form div:nth-child(1) > .personaldata__form__txtinput').should('be.visible')
@@ -43,6 +44,7 @@ describe('content :: account', () => {
   })
   it('content :: account > password ', () => {
     //        account userpreference password
+    cy.get('.sidebar__expand').click()
     cy.get('[data-cy=menusubcomponent__list__password] > .menusubcomponent__list__item__link').click()
     cy.get('.personaldata__sectiontitle').should('be.visible')
     cy.get('.mr-5 div:nth-child(1) > .personaldata__form__txtinput').should('be.visible')
